@@ -18,10 +18,6 @@
 ;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ;; THE SOFTWARE.
 
-    org $8000
-
-INCLUDE utils.asm
-
 scroll_buffer ds 256, $00
 
 credits_string
@@ -29,24 +25,33 @@ credits_string
     db '            spectrum            '
     db '              demo              '
     db '                                '
+    db '        Made in Finland         '
+    db '    Assembled in London, UK     '
     db '                                '
-    db '            Awesome!            '
+    db '    Thank you for watching!!    '
+    db '     You, sir, are awesome!     '
+    db '                                '
+    db '            Code by:            '
+    db '      Juho, Teemu, Antti,       '
+    db '      Tiina, Heidi, Kimmo       '
+    db '                                '
+    db '            Music by:           '
+    db '   Arto, Markus, Jetro, Janos   '
+    db '                                '
+    db '           Greetings to:        '
+    db '            Futurice            '
+    db '           Graffathon           '
+    db '     Lean IT Consultancies      '
     db $00
 
 buffer_fill_count    db 0
 
-start:
-    ;; call ScrollScreenUp
-    call ScrollCredits
-    di
-    halt
-    ret
-
 ;; Scroll one screenful upwards filling with $FF pixels
 ;; input:
 ;;   PixelAddress - Base address for the screen
+
 ScrollScreenUp:
-    ld a, $FF
+    ld a, $00
     call FillScrollBuffer
     ld b, 192
 SSU_Loop
@@ -68,20 +73,25 @@ SSU_Loop
 ScrollCredits:
     ;; Number of rows to scroll
     ;; Must be divisable by 8
-    ld b, 512
+    ld bc, 384
+    ld a, 0
+    ld (buffer_fill_count), a
 SC_Loop
-    ld a, b
+    ld a, c
     and 7
     call z, ReloadScrollBuffer
     halt
     call ScrollOneRowUp
-    ld a, b
+    ld a, c
     and 7
     neg
     add a, 8
     and 7
     call FillLastRow
-    djnz SC_Loop
+    dec bc
+    ld a,b
+    or c
+    jr nz, SC_Loop
     ret
 
 ;; destroys:
@@ -263,5 +273,3 @@ CopyRow:
     pop hl
     pop bc
     ret 
-
-end start
